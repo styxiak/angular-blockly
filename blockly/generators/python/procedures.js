@@ -3,7 +3,7 @@
  * Visual Blocks Language
  *
  * Copyright 2012 Google Inc.
- * https://blockly.googlecode.com/
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ goog.require('Blockly.Python');
 Blockly.Python['procedures_defreturn'] = function(block) {
   // Define a procedure with a return value.
   // First, add a 'global' statement for every variable that is assigned.
-  var globals = Blockly.Variables.allVariables(block);
+  var globals = block.workspace.variableList;
   for (var i = globals.length - 1; i >= 0; i--) {
     var varName = globals[i];
     if (block.arguments_.indexOf(varName) == -1) {
@@ -62,17 +62,18 @@ Blockly.Python['procedures_defreturn'] = function(block) {
   if (returnValue) {
     returnValue = '  return ' + returnValue + '\n';
   } else if (!branch) {
-    branch = '  pass';
+    branch = Blockly.Python.PASS;
   }
   var args = [];
-  for (var x = 0; x < block.arguments_.length; x++) {
-    args[x] = Blockly.Python.variableDB_.getName(block.arguments_[x],
+  for (var i = 0; i < block.arguments_.length; i++) {
+    args[i] = Blockly.Python.variableDB_.getName(block.arguments_[i],
         Blockly.Variables.NAME_TYPE);
   }
   var code = 'def ' + funcName + '(' + args.join(', ') + '):\n' +
       globals + branch + returnValue;
   code = Blockly.Python.scrub_(block, code);
-  Blockly.Python.definitions_[funcName] = code;
+  // Add % so as not to collide with helper functions in definitions list.
+  Blockly.Python.definitions_['%' + funcName] = code;
   return null;
 };
 
@@ -86,8 +87,8 @@ Blockly.Python['procedures_callreturn'] = function(block) {
   var funcName = Blockly.Python.variableDB_.getName(block.getFieldValue('NAME'),
       Blockly.Procedures.NAME_TYPE);
   var args = [];
-  for (var x = 0; x < block.arguments_.length; x++) {
-    args[x] = Blockly.Python.valueToCode(block, 'ARG' + x,
+  for (var i = 0; i < block.arguments_.length; i++) {
+    args[i] = Blockly.Python.valueToCode(block, 'ARG' + i,
         Blockly.Python.ORDER_NONE) || 'None';
   }
   var code = funcName + '(' + args.join(', ') + ')';
@@ -99,8 +100,8 @@ Blockly.Python['procedures_callnoreturn'] = function(block) {
   var funcName = Blockly.Python.variableDB_.getName(block.getFieldValue('NAME'),
       Blockly.Procedures.NAME_TYPE);
   var args = [];
-  for (var x = 0; x < block.arguments_.length; x++) {
-    args[x] = Blockly.Python.valueToCode(block, 'ARG' + x,
+  for (var i = 0; i < block.arguments_.length; i++) {
+    args[i] = Blockly.Python.valueToCode(block, 'ARG' + i,
         Blockly.Python.ORDER_NONE) || 'None';
   }
   var code = funcName + '(' + args.join(', ') + ')\n';

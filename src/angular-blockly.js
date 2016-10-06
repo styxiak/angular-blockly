@@ -8,8 +8,9 @@
 angular.module("angular-blockly", [])
     .provider("ngBlockly", function () {
         this.options = {
-            path: "assets/",
+            media: '/blockly',
             trashcan: true,
+            sound: false,
             toolbox: []
         };
 

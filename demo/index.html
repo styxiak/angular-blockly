@@ -47,33 +47,28 @@
 
     demoApp.config(function myAppConfig(ngBlocklyProvider) {
         ngBlocklyProvider.setOptions({
-            path: "../blockly/media/",
             trashcan: true,
-            toolbox: [
-                {
-                    name: "Logic",
-                    blocks: [
-                        {type: "logic_compare"},
-                        {type: "logic_operation"},
-                        {type: "logic_negate"},
-                        {type: "controls_if"},
-                        {type: "logic_boolean"}
-                    ]
-                },
-                {
-                    name: "Math",
-                    blocks: [
-                        {type: "math_number"},
-                        {type: "math_arithmetic"},
-                        {type: "math_round"},
-                        {type: "math_constrain"},
-                        {type: "math_constant"},
-                        {type: "math_trig"},
-                        {type: "math_number_property"},
-                        {type: "math_change"}
-                    ]
-                }
-            ]
+            path: "../blockly/",
+            toolbox:
+                '<xml>' +
+                    '<category name="Logic">' +
+                        '<block type="logic_compare"></block>' +
+                        '<block type="logic_operation"></block>' +
+                        '<block type="logic_negate"></block>' +
+                        '<block type="controls_if"></block>' +
+                        '<block type="logic_boolean"></block>' +
+                    '</category>' +
+                    '<category name="Math">' +
+                        '<block type="math_number"></block>' +
+                        '<block type="math_arithmetic"></block>' +
+                        '<block type="math_round"></block>' +
+                        '<block type="math_constrain"></block>' +
+                        '<block type="math_constant"></block>' +
+                        '<block type="math_trig"></block>' +
+                        '<block type="math_number_property"></block>' +
+                        '<block type="math_change"></block>' +
+                    '</category>' +
+                '</xml>'
         });
     });
 
