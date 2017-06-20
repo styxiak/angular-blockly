@@ -11,7 +11,7 @@
 .blocklyWidgetDiv {
   position: absolute;
   display: none;
-  z-index: 999;
+  //z-index: 999;
 }
 
 .blocklyDraggable {
@@ -200,6 +200,10 @@
   fill: @panel-bg;//#fff;
   stroke-width: 1;
   stroke: #ddd;
+}
+
+.blocklyFlyout {
+  z-index:1000;
 }
 
 .blocklyFlyoutBackground {

@@ -36,6 +36,7 @@
 #   lua_compressed.js: The compressed Lua generator.
 #   msg/js/<LANG>.js for every language <LANG> defined in msg/js/<LANG>.json.
 
+import pdb
 import sys
 if sys.version_info[0] != 2:
   raise Exception("Blockly build only compatible with Python 2.x.\n"
@@ -85,7 +86,7 @@ var isNodeJS = !!(typeof module !== 'undefined' && module.exports &&
 
 if (isNodeJS) {
   var window = {};
-  require('../closure-library/closure/goog/bootstrap/nodejs');
+  require('closure-library');
 }
 
 window.BLOCKLY_DIR = (function() {
@@ -107,7 +108,7 @@ window.BLOCKLY_DIR = (function() {
 window.BLOCKLY_BOOT = function() {
   var dir = '';
   if (isNodeJS) {
-    require('../closure-library/closure/goog/bootstrap/nodejs');
+    require('closure-library');
     dir = 'blockly';
   } else {
     // Execute after Closure has loaded.
@@ -147,7 +148,7 @@ delete this.BLOCKLY_BOOT;
 };
 
 if (isNodeJS) {
-  window.BLOCKLY_BOOT()
+  window.BLOCKLY_BOOT();
   module.exports = Blockly;
 } else {
   // Delete any existing Closure (e.g. Soy's nogoog_shim).
@@ -176,6 +177,7 @@ class Gen_compressed(threading.Thread):
     self.gen_core()
     self.gen_blocks()
     self.gen_generator("javascript")
+    self.gen_generator_cc("javascript_cc")
     self.gen_generator("python")
     self.gen_generator("php")
     self.gen_generator("dart")
@@ -258,6 +260,34 @@ class Gen_compressed(threading.Thread):
 
     # Remove Blockly.Generator to be compatible with Blockly.
     remove = "var Blockly={Generator:{}};"
+    self.do_compile(params, target_filename, filenames, remove)
+
+  def gen_generator_cc(self, language):
+    target_filename = language + "_compressed.js"
+    # Define the parameters for the POST request.
+    params = [
+        ("compilation_level", "SIMPLE_OPTIMIZATIONS"),
+        ("output_format", "json"),
+        ("output_info", "compiled_code"),
+        ("output_info", "warnings"),
+        ("output_info", "errors"),
+        ("output_info", "statistics"),
+      ]
+
+    # Read in all the source files.
+    # Add Blockly.Generator to be compatible with the compiler.
+    params.append(("js_code", "goog.provide('Blockly.GeneratorCC');"))
+    filenames = glob.glob(
+        os.path.join("generators_cc", language, "*.js"))
+    filenames.insert(0, os.path.join("generators_cc", language + ".js"))
+    for filename in filenames:
+      f = open(filename)
+      params.append(("js_code", "".join(f.readlines())))
+      f.close()
+    filenames.insert(0, "[goog.provide]")
+
+    # Remove Blockly.Generator to be compatible with Blockly.
+    remove = "var Blockly={GeneratorCC:{}};"
     self.do_compile(params, target_filename, filenames, remove)
 
   def do_compile(self, params, target_filename, filenames, remove):
@@ -411,12 +441,13 @@ class Gen_langfiles(threading.Thread):
           os.path.join("i18n", "create_messages.py"),
           "--source_lang_file", os.path.join("msg", "json", "en.json"),
           "--source_synonym_file", os.path.join("msg", "json", "synonyms.json"),
+          "--source_constants_file", os.path.join("msg", "json", "constants.json"),
           "--key_file", os.path.join("msg", "json", "keys.json"),
           "--output_dir", os.path.join("msg", "js"),
           "--quiet"]
       json_files = glob.glob(os.path.join("msg", "json", "*.json"))
       json_files = [file for file in json_files if not
-                    (file.endswith(("keys.json", "synonyms.json", "qqq.json")))]
+                    (file.endswith(("keys.json", "synonyms.json", "qqq.json", "constants.json")))]
       cmd.extend(json_files)
       subprocess.check_call(cmd)
     except (subprocess.CalledProcessError, OSError) as e:
